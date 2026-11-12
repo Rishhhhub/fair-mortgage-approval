@@ -1,0 +1,8 @@
+pandas
+requests
+scikit-learn
+lightgbm
+matplotlib
+pyarrow
+statsmodels
+shap
