@@ -12,6 +12,9 @@
   match rate by year: {2018: 0.983, 2019: 0.984, 2020: 0.988, 2021: 0.989, 2022: 0.978, 2023: 0.978}
 - Join HMDA + FRED (year): rows 1,320,227 -> 1,320,227 (unchanged); match rate 100.0%
   match rate by year: {2018: 1.0, 2019: 1.0, 2020: 1.0, 2021: 1.0, 2022: 1.0, 2023: 1.0}
+- Reporter Panel: 6 yearly files, 29,579 lender-year rows; lender types: {'bank': 13928, 'credit_union': 8857, 'non_bank_mortgage_company': 5715, 'bank_affiliate': 547, 'unknown': 532}
+- Join HMDA + Reporter Panel (LEI, year): rows 1,320,227 -> 1,320,227 (unchanged); match rate 99.8%
+  match rate by year: {2018: 0.999, 2019: 0.998, 2020: 0.997, 2021: 0.997, 2022: 0.998, 2023: 0.999}
 
 ## 3. Derived variables (all computed from the observed columns)
 - Winsorized loan_amount: limits 25,000 to 1,685,000
@@ -19,10 +22,10 @@
 - Winsorized property_value: limits 35,000 to 2,395,000
 - Rows with at least one extreme value (flagged, kept): 23,245 (1.8%)
 - Added: *_real columns (2023 dollars), loan_to_income, dti_mid / dti_above_43, low_income_tract, denied
-- Columns after dropping unused detail columns: 95
+- Columns after dropping unused detail columns: 99
 
 ## 4. Final table
-- Rows: 1,320,227   Columns: 95
+- Rows: 1,320,227   Columns: 99
 - Denial rate overall: 13.0%
 - Rows per year: {2018: 213875, 2019: 219896, 2020: 242691, 2021: 257792, 2022: 213413, 2023: 172560}
 - Columns with most missing values (share missing):
@@ -32,10 +35,10 @@
     intro_rate_period: 94.3%
     discount_points: 67.3%
     lender_credits: 67.2%
+    panel_assets: 65.9%
     co-applicant_age_above_62: 56.5%
     total_loan_costs: 17.7%
     origination_charges: 17.1%
     rate_spread: 16.1%
     interest_rate: 14.9%
-    loan_to_value_ratio: 9.5%
 - Saved C:\Users\Thanua\fair_mortgage\data\processed\ssot.parquet

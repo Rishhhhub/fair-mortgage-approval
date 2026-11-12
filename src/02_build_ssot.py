@@ -142,6 +142,31 @@ def load_fred():
 # --------------------------------------------------------------------------
 # 4. Joins with checks
 # --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# 3b. HMDA Reporter Panel: lender type (downloaded by hand from ffiec.cfpb.gov, see README)
+# --------------------------------------------------------------------------
+def load_panel():
+    files = sorted(glob.glob(str(RAW / "panel" / "20*" / "*.csv")))
+    p = pd.concat((pd.read_csv(f, dtype=str) for f in files), ignore_index=True)
+    p["year"] = p["activity_year"].astype(int)
+    p = p[p["year"].between(2018, 2023)].drop_duplicates(["lei", "year"])
+    code = p["other_lender_code"]
+    name = p["respondent_name"].fillna("").str.upper()
+    # Credit union: regulated by NCUA (agency 5) OR the registered name says so (large credit unions are
+    # supervised by the CFPB, agency 9, so agency code alone would miss them).
+    is_cu = (p["agency_code"] == "5") | name.str.contains("CREDIT UNION|FCU|FEDERAL CREDIT")
+    # other_lender_code (official definition): 0 depository institution, 1/2 mortgage-banking subsidiary of a
+    # bank / bank holding company, 3 independent mortgage banking company, 5 affiliate of a depository institution
+    p["lender_type"] = np.select(
+        [code == "3", code.isin(["1", "2", "5"]), (code == "0") & is_cu, code == "0"],
+        ["non_bank_mortgage_company", "bank_affiliate", "credit_union", "bank"], default="unknown")
+    p["panel_assets"] = pd.to_numeric(p["assets"], errors="coerce").where(lambda a: a > 0)
+    p = p.rename(columns={"other_lender_code": "panel_other_lender_code", "agency_code": "panel_agency_code"})
+    log(f"- Reporter Panel: {len(files)} yearly files, {len(p):,} lender-year rows; "
+        f"lender types: {p['lender_type'].value_counts().to_dict()}")
+    return p[["lei", "year", "lender_type", "panel_assets", "panel_other_lender_code", "panel_agency_code"]]
+
+
 def checked_merge(left, right, on, name):
     """Left join + the checks required by the plan: row count unchanged, match rate reported."""
     n_before = len(left)
@@ -173,6 +198,8 @@ def main():
     df = checked_merge(df, acs, on=["census_tract", "acs_year"], name="HMDA + ACS (tract, year)")
     fred = load_fred()
     df = checked_merge(df, fred, on="year", name="HMDA + FRED (year)")
+    df = checked_merge(df, load_panel(), on=["lei", "year"], name="HMDA + Reporter Panel (LEI, year)")
+    df["lender_type"] = df["lender_type"].fillna("unknown")      # lenders with no panel match
 
     log("\n## 3. Derived variables (all computed from the observed columns)")
     # Outliers: a few incomes / loan amounts are absurd (income up to ~$846M). We KEEP the original
