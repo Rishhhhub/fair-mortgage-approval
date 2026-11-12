@@ -1,6 +1,6 @@
 # Fair Mortgage Approval Decisions
 
-Advanced Data Science (ADS) end-term project (group number to be confirmed).
+Advanced Data Science (ADS) end-term project, Group 8.
 Stakeholder: the credit-risk team of a US home-loan lender.
 Question: what drives mortgage denials, are there unfair gaps between groups, and can we build a fair, explainable approval model?
 
