@@ -41,4 +41,4 @@
     origination_charges: 17.1%
     rate_spread: 16.1%
     interest_rate: 14.9%
-- Saved C:\Users\Thanua\fair_mortgage\data\processed\ssot.parquet
+- Saved data/processed/ssot.parquet

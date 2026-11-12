@@ -244,7 +244,7 @@ def main():
     for c in df.select_dtypes(include=["object", "str"]).columns:
         df[c] = df[c].astype("string")
     df.to_parquet(OUT / "ssot.parquet", index=False)
-    log(f"- Saved {OUT / 'ssot.parquet'}")
+    log("- Saved data/processed/ssot.parquet")
     REPORT.write_text("\n".join(report), encoding="utf-8")
 
 
