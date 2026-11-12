@@ -14,11 +14,15 @@
   match rate by year: {2018: 1.0, 2019: 1.0, 2020: 1.0, 2021: 1.0, 2022: 1.0, 2023: 1.0}
 
 ## 3. Derived variables (all computed from the observed columns)
+- Winsorized loan_amount: limits 25,000 to 1,685,000
+- Winsorized income: limits 16,000 to 754,000
+- Winsorized property_value: limits 35,000 to 2,395,000
+- Rows with at least one extreme value (flagged, kept): 23,245 (1.8%)
 - Added: *_real columns (2023 dollars), loan_to_income, dti_mid / dti_above_43, low_income_tract, denied
-- Columns after dropping unused detail columns: 91
+- Columns after dropping unused detail columns: 95
 
 ## 4. Final table
-- Rows: 1,320,227   Columns: 91
+- Rows: 1,320,227   Columns: 95
 - Denial rate overall: 13.0%
 - Rows per year: {2018: 213875, 2019: 219896, 2020: 242691, 2021: 257792, 2022: 213413, 2023: 172560}
 - Columns with most missing values (share missing):

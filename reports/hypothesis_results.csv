@@ -1,0 +1,8 @@
+hypothesis,method,estimate,ci_95,p_value,verdict,note
+H1,RDD at DTI 43 (bw +/-3) + placebo cutoffs,-0.50 pp,-0.85 to -0.14,0.005799057220680734,Not supported,Denials rise gradually with DTI; compare jump at 43 with placebo cutoffs. Large jumps exist only at 50%+ (outside RDD range).
+H2,"Logit (OR) + PSM ATT, Black vs White",OR 1.73 (model B); PSM gap 4.71 pp,"OR 1.65-1.82; PSM [4.39, 5.01] pp",0.0,Supported,"Association after controlling for observables; no credit score in HMDA, so not proof of discrimination."
+H3,Chi-square + logit with controls (low/moderate tract),OR 1.17; adj. gap 1.21 pp,1.11 to 1.22,3.5406051557869916e-10,Supported,"Compared within the same state, controlling for applicant income, loan, DTI, LTV. Neighbourhood effect, not proof of cause."
+H4,Pearson correlation on 6 yearly points (adjusted denial; median loan),"r=0.73 (denial), r=0.23 (loan)",n/a (6 points),0.09898301496304562,Inconclusive,Only 6 time points and one national rate; cannot separate rates from COVID/boom effects. Direction is reported honestly.
+H5,Gradient boosting + SHAP,pending,pending,,Pending,Next notebook (03_model_fairness).
+H6,Error-rate fairness check,pending,pending,,Pending,Next notebook (03_model_fairness).
+H7,Lender type comparison,not tested,-,,Not tested,Needs HMDA Reporter Panel (lender type) - data not yet downloaded.

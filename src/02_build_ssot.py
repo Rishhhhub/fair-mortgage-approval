@@ -175,10 +175,22 @@ def main():
     df = checked_merge(df, fred, on="year", name="HMDA + FRED (year)")
 
     log("\n## 3. Derived variables (all computed from the observed columns)")
+    # Outliers: a few incomes / loan amounts are absurd (income up to ~$846M). We KEEP the original
+    # columns untouched and make winsorized copies (values below the 0.5th / above the 99.5th
+    # percentile are pulled in to those limits). All *_real columns and loan_to_income use the
+    # winsorized copies, so extreme values cannot dominate averages or models.
+    out_flag = pd.Series(False, index=df.index)
+    for c in ["loan_amount", "income", "property_value"]:
+        lo, hi = df[c].quantile([0.005, 0.995])
+        out_flag |= (df[c] < lo) | (df[c] > hi)
+        df[c + "_w"] = df[c].clip(lo, hi)
+        log(f"- Winsorized {c}: limits {lo:,.0f} to {hi:,.0f}")
+    df["outlier_flag"] = out_flag
+    log(f"- Rows with at least one extreme value (flagged, kept): {out_flag.sum():,} ({out_flag.mean():.1%})")
     # dollar values in 2023 dollars
-    for c in ["loan_amount", "income", "property_value", "acs_median_hh_income", "acs_median_house_value"]:
-        df[c + "_real"] = df[c] * df["cpi_factor_to_2023"]
-    df["loan_to_income"] = df["loan_amount"] / df["income"]
+    for c in ["loan_amount_w", "income_w", "property_value_w", "acs_median_hh_income", "acs_median_house_value"]:
+        df[c.replace("_w", "") + "_real"] = df[c] * df["cpi_factor_to_2023"]
+    df["loan_to_income"] = df["loan_amount_w"] / df["income_w"]
     df["dti_above_43"] = (df["dti_mid"] > 43).astype("float").where(df["dti_mid"].notna())
     df["low_income_tract"] = (df["tract_to_msa_income_percentage"] < 80).astype("float").where(
         df["tract_to_msa_income_percentage"].notna())     # <80% of area income = 'low/moderate' (FFIEC rule)
