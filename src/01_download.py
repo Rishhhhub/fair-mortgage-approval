@@ -115,8 +115,22 @@ def cmd_hmda(args):
 ACS_VARS = "B19013_001E,B25077_001E,B17001_001E,B17001_002E,B23025_003E,B23025_005E"
 
 
+def load_env():
+    """Read KEY=value lines from the git-ignored .env file in the project root."""
+    env = {}
+    path = RAW.parents[1] / ".env"
+    if path.exists():
+        for line in path.read_text().splitlines():
+            if "=" in line and not line.startswith("#"):
+                k, v = line.split("=", 1)
+                env[k.strip()] = v.strip()
+    return env
+
+
 def cmd_acs(args):
-    key = args.key
+    key = args.key or load_env().get("CENSUS_KEY") or None
+    if not key:
+        sys.exit("No Census key: put CENSUS_KEY=... in .env (see README)")
     for y in parse_years(args.years):
         # ACS 5-year ends 2023 at the latest we can rely on; HMDA year y uses ACS y (or y-1 if missing)
         for st_fips in [f"{i:02d}" for i in range(1, 57)]:
@@ -127,17 +141,19 @@ def cmd_acs(args):
             if dest.exists():
                 continue
             r = requests.get(f"https://api.census.gov/data/{y}/acs/acs5", params=params, timeout=120)
-            if r.status_code == 200:
+            if r.status_code == 200 and r.headers.get("content-type", "").startswith("application/json"):
                 dest.parent.mkdir(parents=True, exist_ok=True)
                 dest.write_bytes(r.content)
                 print(f"ACS {y} state {st_fips} ok")
             else:
-                print(f"ACS {y} state {st_fips} -> HTTP {r.status_code} (unused FIPS codes are normal)")
+                print(f"ACS {y} state {st_fips} -> not JSON / HTTP {r.status_code} (a Census API key is required)")
 
 
 def cmd_fred(_args):
-    download("https://fred.stlouisfed.org/graph/fredgraph.csv", {"id": "MORTGAGE30US"},
-             RAW / "fred" / "MORTGAGE30US.csv")
+    # MORTGAGE30US: weekly 30-yr fixed mortgage rate (Freddie Mac PMMS). CPIAUCSL: monthly CPI, for inflation.
+    for series in ("MORTGAGE30US", "CPIAUCSL"):
+        download("https://fred.stlouisfed.org/graph/fredgraph.csv", {"id": series},
+                 RAW / "fred" / f"{series}.csv")
 
 
 def main():
