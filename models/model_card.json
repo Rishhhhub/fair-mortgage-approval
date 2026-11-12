@@ -1,0 +1,82 @@
+{
+  "features": [
+    "dti_mid",
+    "loan_to_value_ratio",
+    "income_w",
+    "loan_amount_w",
+    "property_value_w",
+    "loan_to_income",
+    "loan_term",
+    "total_units",
+    "tract_to_msa_income_percentage",
+    "acs_median_hh_income_real",
+    "acs_poverty_rate",
+    "acs_unemployment_rate",
+    "loan_type",
+    "derived_loan_product_type",
+    "derived_dwelling_category",
+    "construction_method",
+    "preapproval"
+  ],
+  "categorical": [
+    "loan_type",
+    "derived_loan_product_type",
+    "derived_dwelling_category",
+    "construction_method",
+    "preapproval"
+  ],
+  "threshold": 0.30999999999999994,
+  "trained_on": "2018-2022",
+  "tested_on": "2023",
+  "auc_all_rows": 0.8801409494987705,
+  "auc_complete_cases": 0.8252840566656376,
+  "excluded_on_purpose": [
+    "race",
+    "ethnicity",
+    "sex",
+    "age",
+    "tract minority share",
+    "post-decision pricing columns"
+  ],
+  "categories": {
+    "loan_type": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "derived_loan_product_type": [
+      "Conventional:First Lien",
+      "FHA:First Lien",
+      "FSA/RHS:First Lien",
+      "VA:First Lien"
+    ],
+    "derived_dwelling_category": [
+      "Multifamily:Site-Built",
+      "Single Family (1-4 Units):Manufactured",
+      "Single Family (1-4 Units):Site-Built"
+    ],
+    "construction_method": [
+      "1",
+      "2"
+    ],
+    "preapproval": [
+      "1",
+      "2"
+    ]
+  },
+  "medians": {
+    "dti_mid": 39.0,
+    "loan_to_value_ratio": 93.713,
+    "income_w": 85000.0,
+    "loan_amount_w": 255000.0,
+    "property_value_w": 295000.0,
+    "loan_to_income": 2.9661016949152543,
+    "loan_term": 360.0,
+    "total_units": 1.0,
+    "tract_to_msa_income_percentage": 107.0,
+    "acs_median_hh_income_real": 82658.19616910191,
+    "acs_poverty_rate": 0.08449279028585883,
+    "acs_unemployment_rate": 0.04233226837060703
+  }
+}
