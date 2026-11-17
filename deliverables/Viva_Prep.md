@@ -375,7 +375,7 @@ The BADIR "Recommendation": the scoring API, the policy recommendations and road
 **Roadmap (proposed):** Phase 1 shadow pilot, months 0-3, AUC >= 0.80 on their data and no decisions changed; Phase 2 triage of borderline applications, months 3-6, review hours per file and false-positive rate; Phase 3 monitoring and policy review, months 6-12, group gaps under 5 pp and drift alerts.
 
 ### Deliverables and submission
-- **Slides** (`Group_8_..._Presentation.pptx/pdf`): 17 slides plus 3 appendix slides, following the teacher's three stages; speaker notes on every slide.
+- **Slides** (`Group_8_..._Presentation.pptx/pdf`): 14 slides plus 2 appendix slides (11 content slides), following the teacher's three stages; speaker notes on every slide.
 - **Report** (`Group_8_..._Report.docx/pdf`): follows the teacher's template (9 chapters). **Before submitting:** fill the contribution matrix (Chapter 8), add Pari Garg's enrollment number, sign the declaration, and add the **plagiarism report page** after the last page.
 - **Google Form needs:** presentation PDF, report PDF (with one plagiarism page at the end), full plagiarism report PDF, data used (the Parquet file is 97 MB), source link (the GitHub URL), and the code zipped.
 
