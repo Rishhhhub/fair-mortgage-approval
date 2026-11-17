@@ -183,7 +183,33 @@ All tested at the 5% level with **decision rules fixed before looking at results
 
 **22. What is the single most important limitation?** No credit score. It limits both the model's recall and how far we can interpret any gap.
 
-## A10. Demo script (2 minutes)
+**23. Which hypothesis did you want to test but could not, and why?** H8: that credit score explains a large part of the Black-White denial gap. The public HMDA file only gives the *type* of credit score model, not the score, so we had the rows but not the key variable. With a lender's own data we would add the score to the H2 regression and matching and see how much the odds ratio of 1.73 shrinks. Partial evidence: 36.4% of denied Black applicants cite credit history as the primary reason, against 28.3% of White applicants.
+
+**24. Why not use a dataset that has credit scores?** The public datasets we know of that include scores (the Freddie Mac and Fannie Mae loan datasets) only contain loans that were acquired, which means approved loans, so there are no denials to study. They would suit a default question instead (H9).
+
+## A10. The hypothesis we wanted to test but could not (the teacher asked for this)
+
+**H8 (not tested): After controlling for credit score, the Black-White gap in denial shrinks substantially.** In words: credit history explains a large part of the race gap we found in H2. Pre-specified rule we would use: *supported* if adding credit score cuts the adjusted log-odds of the Black coefficient by at least half and the remaining gap is smaller than in H2; *not supported* if the gap stays about the same.
+
+**Why we wanted it.** H2 found an odds ratio of 1.73 (matched gap 4.7 pp), but we could only call it an *association*, because the main variable lenders use, the applicant's credit score, is missing. H8 asks the question that H2 leaves open: how much of the gap is credit history and how much is left unexplained.
+
+**Why we could not test it: missing variable, not too few rows.** The public HMDA file does not contain the credit score. It only has `applicant_credit_score_type` (which scoring model was used, for example 1 = Equifax Beacon 5.0), not the score itself. As we understand it, the score is reported to regulators but not released in the public file (check the CFPB's HMDA data-point list before stating this as fact). So we have 1.3 million rows but no credit score for any of them.
+
+**What data would be needed.** A lender's own application records (approved *and* denied) with credit scores, or restricted-access HMDA data. Public loan-level datasets that do include credit scores (for example the Freddie Mac and Fannie Mae loan datasets, which we believe are free with registration) contain only loans that were *acquired*, i.e. approved, so they cannot be used to study denial. They would suit the default question below.
+
+**How we would test it.**
+1. Re-fit the H2 logistic model and the matching with credit score added to the controls.
+2. Compare the Black odds ratio before (1.73) and after; report the share of the log-odds gap explained.
+3. Repeat the matching with credit score in the propensity model and check balance.
+4. Run the same for H3 and H7, to see whether neighbourhood and lender-type gaps also shrink.
+
+**Partial evidence we do have (not a test).** Among *denied* applicants, the primary reason given is credit history for **36.4% of Black applicants, 28.3% of White and 10.6% of Asian**. That is consistent with credit history explaining part of the Black-White gap, and with the Asian applicants' lower denial rate. It is only suggestive: it is the share *among denials* (not the denial rate among applicants), and the reasons are reported by the lenders.
+
+**A second untestable hypothesis (also mention if asked for more).** *H9: loans approved with DTI above 43% default more often than those below.* This is the real justification for the 43% rule. H1 tested whether lenders *behave* differently at 43%, not whether the rule is *right*. HMDA has no repayment data, so we cannot test it. A loan-performance dataset (see above) would be needed.
+
+---
+
+## A11. Demo script (2 minutes)
 
 1. Open a terminal in the project folder: `uvicorn src.api:app`
 2. Open http://127.0.0.1:8000/docs, expand **POST /score**, click "Try it out".
@@ -376,5 +402,6 @@ What the API does and does not accept; why it recommends review and does not den
 - [ ] Each person can name the seven hypotheses and their verdicts (A5).
 - [ ] Each person can state three limitations (A7).
 - [ ] Each person has read their part in Part B and can walk through its code.
-- [ ] The demo works (A10): run it once before the viva.
+- [ ] Each person can name the hypothesis we could not test and why (A10, H8).
+- [ ] The demo works (A11): run it once before the viva.
 - [ ] Owner lines in Part B and the contribution matrix in the report are filled in, consistent with each other.
