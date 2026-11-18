@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fair Mortgage Approval Dashboard</title>
+<style>
+  :root { --green:#1E3A2F; --mid:#2F5A45; --burg:#8B2635; --amber:#7A5200; --text:#222; --line:#777; --bg:#fff; --card:#F4F7F5; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: Georgia, "Times New Roman", serif; color:var(--text); background:var(--bg); }
+  header { text-align:center; padding:22px 16px 8px; }
+  h1 { margin:0; font-size:26px; color:var(--green); }
+  header p { margin:6px 0 0; font-size:15px; }
+  main { max-width:1050px; margin:0 auto; padding:12px 16px 40px; display:grid; grid-template-columns: 1fr 1fr; gap:22px; }
+  @media (max-width:820px){ main { grid-template-columns:1fr; } }
+  section { background:var(--card); border:1px solid #cdd6d1; border-radius:8px; padding:18px; }
+  h2 { margin:0 0 12px; font-size:17px; color:var(--green); text-align:center; }
+  label { display:block; font-size:14px; font-weight:bold; margin:10px 0 3px; }
+  .hint { font-weight:normal; font-size:12px; color:#444; }
+  input, select { width:100%; padding:8px; font-size:15px; font-family:inherit; border:1px solid var(--line); border-radius:5px; background:#fff; color:var(--text); }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .btns { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  button { font-family:inherit; font-size:15px; padding:10px 16px; border-radius:6px; cursor:pointer; border:2px solid var(--green); }
+  .primary { background:var(--green); color:#fff; font-weight:bold; flex:1; }
+  .secondary { background:#fff; color:var(--green); }
+  .err { color:var(--burg); font-weight:bold; margin-top:10px; font-size:14px; }
+  #verdict { text-align:center; padding:16px 10px; border-radius:8px; color:#fff; margin-bottom:14px; }
+  #verdict .big { font-size:26px; font-weight:bold; }
+  #verdict .small { font-size:14px; margin-top:4px; }
+  .ok { background:var(--mid); } .bad { background:var(--burg); }
+  .gauge { position:relative; height:24px; background:#dfe6e2; border-radius:12px; margin:22px 0 6px; border:1px solid var(--line); }
+  .gauge .fill { height:100%; border-radius:12px; background:var(--green); width:0; transition:width .4s; }
+  .gauge .thr { position:absolute; top:-6px; bottom:-6px; width:3px; background:#000; }
+  .gauge-labels { display:flex; justify-content:space-between; font-size:12px; }
+  table { width:100%; border-collapse:collapse; margin-top:6px; font-size:14px; }
+  td { padding:6px 4px; border-bottom:1px solid #cdd6d1; vertical-align:top; }
+  td.up { color:var(--burg); font-weight:bold; } td.down { color:var(--green); font-weight:bold; }
+  .note { font-size:12px; color:#333; margin-top:14px; line-height:1.4; }
+  .empty { text-align:center; color:#333; padding:40px 10px; font-size:15px; }
+  .calc { font-size:12px; margin-top:4px; color:#333; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Fair Mortgage Approval Dashboard</h1>
+  <p>Enter an application and see what the model says. Group 8, Advanced Data Science.</p>
+</header>
+<main>
+  <section>
+    <h2>Application</h2>
+    <form id="f" autocomplete="off">
+      <div class="row">
+        <div><label for="loan">Loan amount ($)</label><input id="loan" type="number" min="1" step="1000" required value="300000"></div>
+        <div><label for="income">Annual income ($)</label><input id="income" type="number" min="1" step="1000" value="90000"></div>
+      </div>
+      <div class="row">
+        <div><label for="value">Property value ($)</label><input id="value" type="number" min="1" step="1000" value="350000"></div>
+        <div><label for="ltv">Loan-to-value (%) <span class="hint">blank = auto</span></label><input id="ltv" type="number" min="1" max="200" step="0.1" placeholder="auto"></div>
+      </div>
+      <div class="calc" id="calc"></div>
+      <div class="row">
+        <div><label for="dti">Debt-to-income (%)</label><input id="dti" type="number" min="0" max="100" step="0.1" value="38"></div>
+        <div><label for="term">Loan term (months)</label><input id="term" type="number" min="12" max="480" step="12" value="360"></div>
+      </div>
+      <div class="row">
+        <div><label for="ltype">Loan type</label>
+          <select id="ltype"><option value="1">Conventional</option><option value="2">FHA</option><option value="3">VA</option><option value="4">USDA (FSA/RHS)</option></select></div>
+        <div><label for="pre">Pre-approval request?</label>
+          <select id="pre"><option value="2">No</option><option value="1">Yes</option></select></div>
+      </div>
+      <div class="row">
+        <div><label for="tract">Area income vs metro (%)</label><input id="tract" type="number" min="0" max="400" step="1" value="100"></div>
+        <div><label for="units">Units in property</label><input id="units" type="number" min="1" max="4" step="1" value="1"></div>
+      </div>
+      <div class="row">
+        <div><label for="hhinc">Area median household income ($)</label><input id="hhinc" type="number" min="0" step="1000" value="85000"></div>
+        <div class="row" style="gap:8px">
+          <div><label for="pov">Area poverty (%)</label><input id="pov" type="number" min="0" max="100" step="0.5" value="10"></div>
+          <div><label for="unemp">Area unemp. (%)</label><input id="unemp" type="number" min="0" max="100" step="0.5" value="5"></div>
+        </div>
+      </div>
+      <div class="hint">Area fields describe the census tract. Clear one to tell the model it is unknown (unknown area data raises the risk score).</div>
+      <div class="btns">
+        <button type="submit" class="primary">Score application</button>
+        <button type="button" class="secondary" id="rand">Random application</button>
+      </div>
+      <div class="err" id="err"></div>
+    </form>
+    <p class="note">Race, ethnicity, sex and age are not inputs. The model was trained without them and the API refuses them.</p>
+  </section>
+
+  <section>
+    <h2>Model result</h2>
+    <div id="out"><div class="empty">Fill the form and press <b>Score application</b>, or press <b>Random application</b>.</div></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const NAMES = {
+  preapproval: "Pre-approval request", dti_mid: "Debt-to-income ratio", property_value_w: "Property value", loan_amount_w: "Loan amount",
+  derived_dwelling_category: "Dwelling type", loan_to_value_ratio: "Loan-to-value ratio", loan_type: "Loan type", loan_term: "Loan term",
+  income_w: "Income", tract_to_msa_income_percentage: "Area income level", acs_poverty_rate: "Area poverty rate", loan_to_income: "Loan-to-income ratio",
+  acs_unemployment_rate: "Area unemployment", acs_median_hh_income_real: "Area median income", total_units: "Number of units",
+  derived_loan_product_type: "Loan product", construction_method: "Construction method"
+};
+const PRODUCT = { "1": "Conventional:First Lien", "2": "FHA:First Lien", "3": "VA:First Lien", "4": "FSA/RHS:First Lien" };
+const num = (id) => { const v = $(id).value.trim(); return v === "" ? null : Number(v); };
+const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+
+function updateCalc() {
+  const loan = num("loan"), val = num("value"), inc = num("income");
+  const parts = [];
+  if (loan && val) parts.push("LTV " + (100 * loan / val).toFixed(1) + "%");
+  if (loan && inc) parts.push("loan = " + (loan / inc).toFixed(1) + "x income");
+  $("calc").textContent = parts.join("  |  ");
+}
+["loan", "value", "income"].forEach((id) => $(id).addEventListener("input", updateCalc));
+
+function buildPayload() {
+  const loan = num("loan");
+  if (!loan || loan <= 0) throw new Error("Enter a loan amount above zero.");
+  const val = num("value");
+  let ltv = num("ltv");
+  if (ltv === null && val) ltv = Math.round(1000 * loan / val) / 10;
+  const p = {
+    loan_amount_w: loan, income_w: num("income"), property_value_w: val, loan_to_value_ratio: ltv, dti_mid: num("dti"),
+    loan_term: num("term") || 360, total_units: num("units") || 1, tract_to_msa_income_percentage: num("tract"), acs_median_hh_income_real: num("hhinc"),
+    acs_poverty_rate: num("pov") === null ? null : num("pov") / 100, acs_unemployment_rate: num("unemp") === null ? null : num("unemp") / 100,
+    loan_type: $("ltype").value, derived_loan_product_type: PRODUCT[$("ltype").value], preapproval: $("pre").value
+  };
+  Object.keys(p).forEach((k) => { if (p[k] === null) delete p[k]; });   // unknown values are left out; the model handles gaps
+  return p;
+}
+
+function render(r) {
+  const prob = r.denial_probability, thr = r.threshold_used, deny = prob >= thr;
+  const fill = Math.min(100, prob * 100), t = thr * 100;
+  const rows = r.top_factors.map((f) => {
+    const name = NAMES[f.feature] || f.feature, up = f.direction.startsWith("raises");
+    return `<tr><td>${name}</td><td class="${up ? "up" : "down"}">${up ? "pushes toward denial" : "pushes toward approval"}</td></tr>`;
+  }).join("");
+  $("out").innerHTML = `
+    <div id="verdict" class="${deny ? "bad" : "ok"}">
+      <div class="big">${deny ? "Model says: DENY / REFER" : "Model says: APPROVE"}</div>
+      <div class="small">${deny ? "High denial risk, send to a human underwriter" : "Low denial risk"}</div>
+    </div>
+    <div style="text-align:center;font-size:15px">Chance of denial: <b style="font-size:22px">${(prob * 100).toFixed(1)}%</b></div>
+    <div class="gauge"><div class="fill" style="width:${fill}%;background:${deny ? "var(--burg)" : "var(--mid)"}"></div><div class="thr" style="left:${t}%"></div></div>
+    <div class="gauge-labels"><span>0%</span><span>Decision line ${t.toFixed(0)}%</span><span>100%</span></div>
+    <h2 style="margin-top:18px">Top 3 reasons</h2>
+    <table>${rows}</table>
+    <p class="note">The decision line (${t.toFixed(0)}%) is the score that gave the best balance of catches and false alarms on 2022 data. On 2023 it flags about 6.6% of applications; 72% of those flags were real denials, and it catches 45% of all denials. ${r.note}</p>`;
+}
+
+async function score() {
+  $("err").textContent = "";
+  let payload;
+  try { payload = buildPayload(); } catch (e) { $("err").textContent = e.message; return; }
+  try {
+    const res = await fetch("/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+    if (!res.ok) { const e = await res.json(); throw new Error("The API rejected this input: " + JSON.stringify(e.detail || e)); }
+    render(await res.json());
+  } catch (e) { $("err").textContent = e.message; }
+}
+
+const rnd = (a, b) => a + Math.random() * (b - a);
+function randomApplication() {
+  const value = Math.round(rnd(150, 800) / 5) * 5000;
+  const ltv = Math.round(rnd(55, 98));
+  const loan = Math.round(value * ltv / 100 / 1000) * 1000;
+  const income = Math.round(loan / rnd(2, 5.5) / 1000) * 1000;
+  $("loan").value = loan; $("value").value = value; $("income").value = income; $("ltv").value = "";
+  $("dti").value = Math.round(rnd(15, 62)); $("term").value = Math.random() < 0.85 ? 360 : 180;
+  $("ltype").value = String(Math.random() < 0.6 ? 1 : 1 + Math.floor(rnd(1, 4)));
+  $("pre").value = Math.random() < 0.1 ? "1" : "2";
+  $("tract").value = Math.round(rnd(50, 160)); $("units").value = 1;
+  $("hhinc").value = Math.round(rnd(40, 140)) * 1000; $("pov").value = Math.round(rnd(2, 25)); $("unemp").value = Math.round(rnd(2, 10));
+  updateCalc(); score();
+}
+
+$("f").addEventListener("submit", (e) => { e.preventDefault(); score(); });
+$("rand").addEventListener("click", randomApplication);
+updateCalc();
+if (location.hash === "#random") randomApplication();
+if (location.hash === "#risky") { $("dti").value = 62; $("ltv").value = 100; $("value").value = 300000; updateCalc(); score(); }
+</script>
+</body>
+</html>

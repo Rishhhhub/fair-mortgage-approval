@@ -7,6 +7,7 @@ What it does
   POST /score   -> probability the application would be denied, a recommendation, and the 3
                    factors that pushed the score most (SHAP values from the model itself).
   GET  /health  -> model version info.
+  GET  /dashboard (also /) -> a web page where you type an application and see the result.
 
 What it deliberately does NOT accept: race, ethnicity, sex or age. The model was trained without
 them (fair-lending law), so the API has no field for them either.
@@ -19,6 +20,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,6 +66,12 @@ def to_frame(app_in: Application) -> pd.DataFrame:
     for c in set(FEATURES) - set(CATEG):
         X[c] = pd.to_numeric(X[c], errors="coerce")
     return X
+
+
+@app.get("/", include_in_schema=False)
+@app.get("/dashboard", include_in_schema=False)
+def dashboard():
+    return FileResponse(ROOT / "src" / "dashboard.html")
 
 
 @app.get("/health")

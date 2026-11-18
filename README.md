@@ -31,7 +31,7 @@ Framework: BADIR (Business question, Analysis plan, Data, Insights, Recommendati
    - `notebooks/01_eda.ipynb` - data audit and exploratory analysis
    - `notebooks/02_hypothesis_tests.ipynb` - H1-H4 and H7 (RDD, chi-square, logistic regression, propensity score matching)
    - `notebooks/03_model_fairness.ipynb` - H5 and H6 (gradient boosting, SHAP, calibration, fairness audit, reweighing); saves `models/`
-7. Scoring API: `uvicorn src.api:app` then open http://127.0.0.1:8000/docs. Tests: `python tests/test_api.py`.
+7. Scoring API and dashboard: `uvicorn src.api:app`, then open http://127.0.0.1:8000/ for the dashboard (type an application, see approve or deny) or http://127.0.0.1:8000/docs for the raw API. Tests: `python tests/test_api.py`.
 
 Raw and processed data are not committed (size); the scripts rebuild them. Results table: `reports/hypothesis_results.csv`. Figures: `reports/figures/`.
 
