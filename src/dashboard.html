@@ -54,6 +54,20 @@
   .err { color:var(--burg); font-weight:700; margin-top:12px; font-size:13px; text-align:center; }
   .fine { font-size:11.5px; color:var(--muted); margin-top:16px; text-align:center; }
 
+  .examples { margin-top:18px; border:1px dashed var(--line); border-radius:10px; padding:12px 14px 14px; background:#FAFBFA; }
+  .examples .ttl { text-align:center; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; color:var(--mid); margin-bottom:10px; }
+  .exbtns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:520px){ .exbtns { grid-template-columns:1fr; } }
+  .ex { text-align:left; font-size:12.5px; line-height:1.4; padding:10px 12px; background:#fff; font-weight:400; color:var(--text); }
+  .ex b { display:block; font-size:13px; margin-bottom:2px; }
+  .ex.apr { border-color:var(--mid); } .ex.apr b { color:var(--mid); } .ex.apr:hover { background:var(--ok-bg); }
+  .ex.den { border-color:var(--burg); } .ex.den b { color:var(--burg); } .ex.den:hover { background:var(--bad-bg); }
+  .exnote { font-size:11px; color:var(--muted); margin-top:9px; line-height:1.5; text-align:center; }
+  .actual { margin-top:14px; border:1px solid var(--line); border-radius:10px; padding:10px 14px; font-size:12.5px; background:#FAFBFA; }
+  .actual .l { font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:var(--muted); }
+  .actual .r { font-weight:700; margin-top:2px; font-size:14px; }
+  .actual .agree { color:var(--mid); } .actual .miss { color:var(--amber); }
+  .actual .small { font-weight:400; font-size:11.5px; color:var(--muted); margin-top:3px; }
   .empty { text-align:center; padding:56px 12px; color:var(--muted); font-size:14px; }
   .empty .big { font-size:42px; color:var(--line); margin-bottom:8px; }
 
@@ -142,6 +156,14 @@
         <button type="submit" class="primary">Score application</button>
         <button type="button" class="secondary" id="rand">Random application</button>
       </div>
+      <div class="examples">
+        <div class="ttl">Real applications from our 2023 data</div>
+        <div class="exbtns">
+          <button type="button" class="ex apr" id="exA"><b>Approved in the data</b>Colorado, $385,000 loan, DTI 39%</button>
+          <button type="button" class="ex den" id="exD"><b>Denied in the data</b>Georgia, $325,000 loan, DTI 50-60%</button>
+        </div>
+        <div class="exnote">Both come from the HMDA 2023 file, a year the model never saw in training. They are clear, typical cases. The model catches about 45% of real denials overall, so some other real denials would show APPROVE.</div>
+      </div>
       <div class="err" id="err"></div>
       <p class="fine">Clearing a neighbourhood field tells the model it is unknown, which raises the risk score.</p>
     </form>
@@ -164,6 +186,14 @@ const NAMES = {
   acs_unemployment_rate: "Area unemployment", acs_median_hh_income_real: "Area median income", total_units: "Number of units",
   derived_loan_product_type: "Loan product", construction_method: "Construction method"
 };
+const EXAMPLES = {
+  A: { label: "Approved", state: "Colorado", loan: 385000, value: 485000, ltv: 80, income: 89000, dti: 39, term: 360, ltype: "1", pre: "2",
+       tract: 117.13, hhinc: 141875, pov: 2.6, unemp: 3.5, units: 1 },
+  D: { label: "Denied", state: "Georgia", loan: 325000, value: 345000, ltv: 95, income: 110000, dti: 55, term: 360, ltype: "1", pre: "2",
+       tract: 99.43, hhinc: 95670, pov: 7.9, unemp: 4.4, units: 1,
+       note: "The data gives DTI as the range 50-60%, so we enter the midpoint, 55." }
+};
+let currentExample = null;
 const PRODUCT = { "1": "Conventional:First Lien", "2": "FHA:First Lien", "3": "VA:First Lien", "4": "FSA/RHS:First Lien" };
 const num = (id) => { const v = $(id).value.trim(); return v === "" ? null : Number(v); };
 
@@ -192,6 +222,26 @@ function buildPayload() {
   return p;
 }
 
+function loadExample(key) {
+  const e = EXAMPLES[key];
+  $("loan").value = e.loan; $("value").value = e.value; $("ltv").value = e.ltv; $("income").value = e.income; $("dti").value = e.dti;
+  $("term").value = e.term; $("ltype").value = e.ltype; $("pre").value = e.pre; $("tract").value = e.tract; $("hhinc").value = e.hhinc;
+  $("pov").value = e.pov; $("unemp").value = e.unemp; $("units").value = e.units;
+  updateCalc(); score().then(() => { currentExample = key; showActual(lastResult); });
+}
+let lastResult = null;
+function showActual(r) {
+  const old = document.getElementById("actual"); if (old) old.remove();
+  if (!currentExample || !r) return;
+  const e = EXAMPLES[currentExample], deny = r.denial_probability >= r.threshold_used, wasDenied = e.label === "Denied";
+  const agree = deny === wasDenied;
+  const div = document.createElement("div"); div.id = "actual"; div.className = "actual";
+  div.innerHTML = `<div class="l">What really happened (HMDA 2023, ${e.state})</div>
+    <div class="r">Real outcome: ${e.label.toUpperCase()} &nbsp;|&nbsp; Model: ${deny ? "DENY / REFER" : "APPROVE"} &nbsp;
+    <span class="${agree ? "agree" : "miss"}">${agree ? "&#10003; model agrees" : "&#10007; model disagrees"}</span></div>
+    ${e.note ? `<div class="small">${e.note}</div>` : ""}`;
+  const v = document.querySelector("#out .verdict"); if (v) v.after(div);
+}
 function render(r) {
   const prob = r.denial_probability, thr = r.threshold_used, deny = prob >= thr;
   const pct = (prob * 100), t = thr * 100, margin = pct - t;
@@ -225,13 +275,13 @@ function render(r) {
 }
 
 async function score() {
-  $("err").textContent = "";
+  $("err").textContent = ""; currentExample = null;
   let payload;
   try { payload = buildPayload(); } catch (e) { $("err").textContent = e.message; return; }
   try {
     const res = await fetch("/score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
     if (!res.ok) { const e = await res.json(); throw new Error("The API rejected this input: " + JSON.stringify(e.detail || e)); }
-    render(await res.json());
+    lastResult = await res.json(); render(lastResult);
   } catch (e) { $("err").textContent = e.message; }
 }
 
@@ -252,6 +302,10 @@ function randomApplication() {
 
 $("f").addEventListener("submit", (e) => { e.preventDefault(); score(); });
 $("rand").addEventListener("click", randomApplication);
+$("exA").addEventListener("click", () => loadExample("A"));
+$("exD").addEventListener("click", () => loadExample("D"));
+if (location.hash === "#approved") loadExample("A");
+if (location.hash === "#denied") loadExample("D");
 updateCalc();
 if (location.hash === "#random") randomApplication();
 if (location.hash === "#risky") { $("dti").value = 62; $("ltv").value = 100; $("value").value = 300000; updateCalc(); score(); }
