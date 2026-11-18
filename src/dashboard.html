@@ -106,12 +106,12 @@
     <form id="f" autocomplete="off">
       <h3>Loan</h3>
       <div class="row">
-        <div><label for="loan">Loan amount ($)</label><input id="loan" type="number" min="1" step="1000" required value="300000"></div>
-        <div><label for="value">Property value ($)</label><input id="value" type="number" min="1" step="1000" value="350000"></div>
+        <div><label for="loan">Loan amount ($)</label><input id="loan" type="number" min="1" step="any" required value="300000"></div>
+        <div><label for="value">Property value ($)</label><input id="value" type="number" min="1" step="any" value="350000"></div>
       </div>
       <div class="row">
         <div><label for="ltv">Loan-to-value (%) <span class="hint">blank = auto</span></label><input id="ltv" type="number" min="1" max="200" step="0.1" placeholder="auto"></div>
-        <div><label for="term">Loan term (months)</label><input id="term" type="number" min="12" max="480" step="12" value="360"></div>
+        <div><label for="term">Loan term (months)</label><input id="term" type="number" min="1" max="600" step="1" value="360"></div>
       </div>
       <div class="row">
         <div><label for="ltype">Loan type</label>
@@ -122,7 +122,7 @@
 
       <h3>Applicant</h3>
       <div class="row">
-        <div><label for="income">Annual income ($)</label><input id="income" type="number" min="1" step="1000" value="90000"></div>
+        <div><label for="income">Annual income ($)</label><input id="income" type="number" min="1" step="any" value="90000"></div>
         <div><label for="dti">Debt-to-income (%)</label><input id="dti" type="number" min="0" max="100" step="0.1" value="38"></div>
       </div>
       <div class="calc" id="calc"></div>
@@ -130,7 +130,7 @@
       <h3>Neighbourhood (census tract)</h3>
       <div class="row">
         <div><label for="tract">Area income vs metro (%)</label><input id="tract" type="number" min="0" max="400" step="1" value="100"></div>
-        <div><label for="hhinc">Area median income ($)</label><input id="hhinc" type="number" min="0" step="1000" value="85000"></div>
+        <div><label for="hhinc">Area median income ($)</label><input id="hhinc" type="number" min="0" step="any" value="85000"></div>
       </div>
       <div class="row3">
         <div><label for="pov">Poverty (%)</label><input id="pov" type="number" min="0" max="100" step="0.5" value="10"></div>
